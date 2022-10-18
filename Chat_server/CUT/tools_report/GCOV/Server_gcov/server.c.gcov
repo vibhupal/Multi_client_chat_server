@@ -1,0 +1,240 @@
+        -:    0:Source:server.c
+        -:    0:Graph:server.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    1:#include<header.h>
+        -:    2:#include"common.c"
+        -:    3:
+    #####:    4:void printlist(int sock , int a){
+        -:    5:	int i;
+    #####:    6:	char end[]="end";
+    #####:    7:	for(i=0;i<MAX_CLIENTS;i++)
+        -:    8:	{
+    #####:    9:		if(clients[i]){
+    #####:   10:			send(sock , clients[i]->name ,strlen(clients[i]->name), 0);
+    #####:   11:			sleep(1);
+        -:   12:		}
+        -:   13:	}
+    #####:   14:	if(i == MAX_CLIENTS)
+        -:   15:	{
+    #####:   16:		send(sock , end ,strlen(end), 0);
+        -:   17:	}
+        -:   18:	
+    #####:   19:}
+    #####:   20:void login(int sock, char *a){
+        -:   21:	char y[4];
+    #####:   22:	strcpy(y, "yes");
+        -:   23:	char n[3];
+    #####:   24:	strcpy(n ,"no");
+        -:   25:	cstruct *q;
+        -:   26:	char rec[4];
+    #####:   27:	q=head;
+    #####:   28:	while(q!=NULL){
+    #####:   29:		if(strcmp(q->name , a)==0){
+        -:   30:			while(1){
+    #####:   31:				recv(sock , rec , 4, 0);
+    #####:   32:				if(strcmp(rec , q->pass)==0){
+    #####:   33:					send(sock , y , strlen(y), 0);
+    #####:   34:					break;
+        -:   35:				}
+        -:   36:				else{
+    #####:   37:					send(sock , n , strlen(n), 0);
+        -:   38:				}
+        -:   39:			}
+    #####:   40:			break;
+        -:   41:		}
+        -:   42:		else
+    #####:   43:			q=q->next;
+        -:   44:	}
+        -:   45:	
+    #####:   46:}
+        -:   47:			
+        -:   48:
+    #####:   49:void reg(int n,char *a){
+        -:   50:	cstruct *temp;
+        -:   51:	char rec[5];
+    #####:   52:	recv(n, rec , 4 , 0);
+    #####:   53:	temp =( cstruct *)malloc(1*sizeof(cstruct ));
+    #####:   54:	strcpy(temp->name , a);
+        -:   55:	
+    #####:   56:	strcpy(temp->pass ,rec);
+    #####:   57:	if (head == NULL)
+        -:   58:	{
+    #####:   59:		head = temp;
+    #####:   60:		temp->next =NULL;
+        -:   61:	}
+        -:   62:	else
+        -:   63:	{
+    #####:   64:		temp->next =head;
+    #####:   65:		head = temp;
+        -:   66:	}
+    #####:   67:}
+        -:   68:
+        -:   69:
+    #####:   70:int check(char *a){
+        -:   71:	cstruct *new ;
+    #####:   72:	new =head;
+    #####:   73:	while(new !=NULL)
+        -:   74:	{
+    #####:   75:		if(strcmp(new->name ,a )==0)
+        -:   76:		{
+    #####:   77:			return 1;
+        -:   78:		}
+        -:   79:		else 
+    #####:   80:			new = new->next;
+        -:   81:	}
+    #####:   82:	return 0;
+        -:   83:}
+        -:   84:
+        -:   85:
+        -:   86:/* Add clients to queue */
+    #####:   87:void queue_add(client_t *cl){
+    #####:   88:	pthread_mutex_lock(&clients_mutex);
+    #####:   89:	for(int i=0; i < MAX_CLIENTS; ++i){
+    #####:   90:		if(!clients[i]){
+    #####:   91:			clients[i] = cl;
+    #####:   92:			break;
+        -:   93:		}
+        -:   94:	}
+    #####:   95:	pthread_mutex_unlock(&clients_mutex);
+    #####:   96:}
+        -:   97:
+        -:   98:/* Remove clients to queue */
+    #####:   99:void queue_remove(int uid){
+    #####:  100:	pthread_mutex_lock(&clients_mutex);
+    #####:  101:	for(int i=0; i < MAX_CLIENTS; ++i){
+    #####:  102:		if(clients[i]){
+    #####:  103:			if(clients[i]->uid == uid){
+    #####:  104:				clients[i] = NULL;
+    #####:  105:				break;
+        -:  106:			}
+        -:  107:		}
+        -:  108:	}
+        -:  109:
+    #####:  110:	pthread_mutex_unlock(&clients_mutex);
+    #####:  111:}
+        -:  112:
+        -:  113:/* Handle all communication with the client */
+    #####:  114:void *handle_client(void *arg){
+        -:  115:	char buff_out[BUFFER_SZ];
+        -:  116:	char name[32];
+    #####:  117:	int leave_flag = 0;
+    #####:  118:	cli_count++;
+    #####:  119:	client_t *cli = (client_t *)arg;
+    #####:  120:	char no[]="no";
+    #####:  121:	char yes[]="yes";
+    #####:  122:	if(recv(cli->sockfd, name, 32, 0) <= 0 || strlen(name) <  2 || strlen(name) >= 32-1){
+    #####:  123:		printf("not valid name\n");
+    #####:  124:		leave_flag = 1;
+        -:  125:	} else{
+    #####:  126:		strcpy(cli->name, name);
+    #####:  127:		int rc =check(name);
+    #####:  128:		if (rc == 0){
+    #####:  129:			if( send(cli->sockfd , no , 2, 0)>0)
+        -:  130:			{
+    #####:  131:				reg (cli->sockfd, name);
+        -:  132:			}
+        -:  133:		}
+        -:  134:		else
+    #####:  135:			send(cli->sockfd , yes , 3, 0);
+        -:  136:
+    #####:  137:		login(cli->sockfd , name);
+    #####:  138:		printlist(cli->sockfd ,cli->uid);
+    #####:  139:		sprintf(buff_out, "%s has joined\n", cli->name);
+    #####:  140:		printf("%s", buff_out);
+    #####:  141:		send_message(buff_out, cli->uid);
+        -:  142:			
+    #####:  143:		bzero(buff_out, BUFFER_SZ);
+        -:  144:
+    #####:  145:		while(1){
+    #####:  146:			if (leave_flag) {
+    #####:  147:				break;
+        -:  148:			}
+        -:  149:
+    #####:  150:			int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);
+    #####:  151:			if (receive > 0){
+    #####:  152:				if(strlen(buff_out) > 0){
+    #####:  153:					send_message(buff_out, cli->uid);
+    #####:  154:					str_trim_lf(buff_out, strlen(buff_out));
+    #####:  155:					printf("%s -> %s\n", buff_out, cli->name);
+        -:  156:				}
+        -:  157:			}
+    #####:  158:			else if (receive == 0 || strcmp(buff_out, "exit") == 0){
+    #####:  159:				sprintf(buff_out, "%s has left\n", cli->name);
+    #####:  160:				printf("%s", buff_out);
+    #####:  161:				send_message(buff_out, cli->uid);
+    #####:  162:				leave_flag = 1;
+        -:  163:			} else {
+    #####:  164:				printf("ERROR: -1\n");
+    #####:  165:				leave_flag = 1;
+        -:  166:			}
+        -:  167:		}
+    #####:  168:		bzero(buff_out, BUFFER_SZ);
+        -:  169:		/* Delete client from queue and yield thread */
+    #####:  170:		close(cli->sockfd);
+    #####:  171:		queue_remove(cli->uid);
+    #####:  172:		free(cli);
+    #####:  173:		cli_count--;
+    #####:  174:		pthread_detach(pthread_self());
+        -:  175:	}
+    #####:  176:		return NULL;
+        -:  177:}
+        -:  178:
+        -:  179:
+    #####:  180:int main(){
+    #####:  181:	char *ip = "127.0.0.1";
+    #####:  182:	int port = 8880;
+    #####:  183:	int listenfd = 0, connfd = 0;
+        -:  184:	struct sockaddr_in serv_addr;
+        -:  185:	struct sockaddr_in cli_addr;
+        -:  186:	pthread_t tid;
+        -:  187:
+        -:  188:	  /* Socket settings */
+    #####:  189:	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    #####:  190:	serv_addr.sin_family = AF_INET;
+        -:  191://	serv_addr.sin_addr.s_addr = INADDR_ANY;
+    #####:  192:        serv_addr.sin_addr.s_addr = inet_addr(ip);
+    #####:  193:	serv_addr.sin_port = htons(port);
+        -:  194:	/* Ignore pipe signals 
+        -:  195:	 * signal(SIGPIPE, SIG_IGN);*/
+        -:  196:	/*
+        -:  197:	 * if(setsockopt(listenfd, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0){
+        -:  198:	 * perror("ERROR: setsockopt failed");
+        -:  199:	 * return EXIT_FAILURE;
+        -:  200:	 * }*/
+        -:  201:
+        -:  202:		/* Bind */
+    #####:  203:	if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+    #####:  204:		perror("ERROR: Socket binding failed");
+    #####:  205:		return EXIT_FAILURE;
+        -:  206:	}
+        -:  207:
+        -:  208:	  /* Listen */
+    #####:  209:	if (listen(listenfd, 1) < 0) {
+    #####:  210:		perror("ERROR: Socket listening failed");
+    #####:  211:		return EXIT_FAILURE;
+        -:  212:	}
+    #####:  213:	printf("=== WELCOME TO THE CHATROOM ===\n");
+    #####:  214:	while(1){
+    #####:  215:		socklen_t clilen = sizeof(cli_addr);
+    #####:  216:		connfd = accept(listenfd, (struct sockaddr*)&cli_addr, &clilen);
+        -:  217:		/* Check if max clients is reached */
+    #####:  218:		if((cli_count + 1) == MAX_CLIENTS){
+    #####:  219:			printf("Max clients reached. Rejected: ");
+    #####:  220:			printf(":%d\n", cli_addr.sin_port);
+    #####:  221:			close(connfd);
+    #####:  222:			continue;
+        -:  223:		}
+        -:  224:		/* Client settings */
+    #####:  225:		client_t *cli = (client_t *)malloc(sizeof(client_t));
+    #####:  226:		cli->sockfd = connfd;
+    #####:  227:		cli->uid = ++uid;
+        -:  228:		/* Add client to the queue and fork thread */
+    #####:  229:		queue_add(cli);
+    #####:  230:		pthread_create(&tid, NULL, &handle_client, (void*)cli);
+        -:  231:		/* Reduce CPU usage */
+    #####:  232:		sleep(1);
+        -:  233:	}
+        -:  234:	return EXIT_SUCCESS;
+        -:  235:}
+        -:  236:

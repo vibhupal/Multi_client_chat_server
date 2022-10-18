@@ -1,0 +1,35 @@
+        -:    0:Source:common.c
+        -:    0:Graph:server.gcno
+        -:    0:Data:-
+        -:    0:Runs:0
+        -:    1:#include<header.h>
+        -:    2:
+    #####:    3:void str_overwrite_stdout() {
+    #####:    4:	printf("\r%s", "> ");
+    #####:    5:	fflush(stdout);
+    #####:    6:}
+    #####:    7:void str_trim_lf (char* arr, int length) {
+        -:    8:	int i;
+    #####:    9:	for (i = 0; i < length; i++) { 
+    #####:   10:		if (arr[i] == '\n') {
+    #####:   11:			arr[i] = '\0';
+    #####:   12:			break;
+        -:   13:		}
+        -:   14:	}
+    #####:   15:}
+        -:   16:
+        -:   17:/* Send message to all clients except sender */
+    #####:   18:void send_message(char *s, int uid){
+    #####:   19:	pthread_mutex_lock(&clients_mutex);
+    #####:   20:	for(int i=0; i<MAX_CLIENTS; ++i){
+    #####:   21:		if(clients[i]){
+    #####:   22:			if(clients[i]->uid != uid){
+    #####:   23:				if(write(clients[i]->sockfd, s, strlen(s)) < 0){
+    #####:   24:					perror("ERROR: write to descriptor failed");
+    #####:   25:					break;
+        -:   26:				}
+        -:   27:			}
+        -:   28:		}
+        -:   29:	}
+    #####:   30:	pthread_mutex_unlock(&clients_mutex);
+    #####:   31:}

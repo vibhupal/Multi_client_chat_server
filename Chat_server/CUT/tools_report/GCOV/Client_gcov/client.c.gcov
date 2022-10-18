@@ -1,0 +1,95 @@
+        -:    0:Source:client.c
+        -:    0:Graph:client.gcno
+        -:    0:Data:client.gcda
+        -:    0:Runs:3
+        -:    1:#include<header.h>
+        -:    2:#define LENGTH 2048
+        -:    3:#include"login.c"
+        -:    4:#include"common_client.c"
+        -:    5:pthread_mutex_t lock;
+        -:    6:
+        3:    7:int main(int argc, char **argv){
+        3:    8:	if(argc != 2){
+        2:    9:		printf("Usage: %s <port>\n", argv[0]);
+        2:   10:		return EXIT_FAILURE;
+        -:   11:	}
+        -:   12:	char pass[5];
+        -:   13:	char rec[15];
+        1:   14:	char *ip = "127.0.0.1";
+        1:   15:	int port = atoi(argv[1]);
+        1:   16:	signal(SIGINT, catch_ctrl_c_and_exit);
+        1:   17:	printf("Please enter your name: ");
+        1:   18:	fgets(name, 32, stdin);
+        1:   19:	str_trim_lf(name, strlen(name));
+        1:   20:	if (strlen(name) > 32 || strlen(name) < 2){
+    #####:   21:		printf("Name must be less than 30 and more than 2 characters.\n");
+    #####:   22:		return EXIT_FAILURE;
+        -:   23:	}
+        -:   24:
+        -:   25:
+        -:   26:	struct sockaddr_in server_addr;
+        -:   27:
+        -:   28:	/* Socket settings */
+        1:   29:	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        1:   30:	server_addr.sin_family = AF_INET;
+        1:   31:	server_addr.sin_addr.s_addr = inet_addr(ip);
+        1:   32:	server_addr.sin_port = htons(port);
+        -:   33:
+        -:   34:
+        -:   35:
+        1:   36:	int err = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+        1:   37:	if (err == -1) {
+    #####:   38:		printf("ERROR: connect\n");
+    #####:   39:		return EXIT_FAILURE;
+        -:   40:	}
+        -:   41:
+        -:   42:
+        1:   43:	send(sockfd, name, 32, 0);
+        1:   44:	recv(sockfd ,rec ,15 ,0);
+        1:   45:	if(strcmp(rec , "no")==0)
+        -:   46:	{
+        1:   47:		int a = set(sockfd );
+        1:   48:		if (a ==0)
+        -:   49:		{
+        1:   50:			printf("registered\n");
+        -:   51:		}
+        -:   52:		else
+        -:   53:		{
+    #####:   54:			printf("registeration failed\n ");
+    #####:   55:			exit(0);
+        -:   56:		}
+        -:   57:	}
+    #####:   58:	while(1){
+        1:   59:		printf("please enter the password to login\n");
+        1:   60:		fflush(stdout);
+        1:   61:		fgets(pass , 5 , stdin);
+        1:   62:		send(sockfd , pass , strlen(pass) ,0) ;
+        1:   63:		int val = valid(sockfd);
+        1:   64:		if(val ==0)
+        1:   65:			break;
+        -:   66:		else{
+    #####:   67:			printf("password incorrecct\n");
+        -:   68:		}
+        -:   69:	}
+        1:   70:	activelist(sockfd);
+        1:   71:	printf("=== WELCOME TO THE CHATROOM ===\n");
+        -:   72:	pthread_t send_msg_thread;
+        1:   73:	if(pthread_create(&send_msg_thread, NULL, (void *) send_msg_handler, NULL) != 0){
+    #####:   74:		printf("ERROR: pthread\n");
+    #####:   75:		return EXIT_FAILURE;
+        -:   76:	}
+        -:   77:	pthread_t recv_msg_thread;
+        1:   78:	if(pthread_create(&recv_msg_thread, NULL, (void *) recv_msg_handler, NULL) != 0){
+    #####:   79:		printf("ERROR: pthread\n");
+    #####:   80:		return EXIT_FAILURE;
+        -:   81:	}
+        -:   82:	while (1){
+2260937370:   83:		if(flag){
+        1:   84:			printf("\nBye\n");
+        1:   85:			break;
+        -:   86:		}
+        -:   87:	}
+        1:   88:	close(sockfd);
+        1:   89:	return EXIT_SUCCESS;
+        -:   90:}
+        -:   91:

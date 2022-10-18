@@ -1,0 +1,27 @@
+codebind@codebind-VirtualBox: -/Desktop/sprint2/sprintp3/compile
+codebind@codebind-VirtualBox: /Desktop/sprint2/sprintp3/compiles valgrind .. /bin/server.exe
+ ==3506== Memcheck, a memory error detector
+ ==3506== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+ ==3506== Using Valgrind -3.18.1 and LibVEX; rerun with -h for copyright info
+ ==3506== Command: ../bin/server.exe
+ ==3506==
+ === WELCOME TO THE CHATROOM ===
+ ^C==3506==
+ ==3506== Process terminating with default action of signal 2 (SIGINT),
+ ==3506== at 0x4991507: accept (accept.c:26)
+ ==3506== by Ox109F51: main (server.c:216)
+ ==3506==
+ ==3506== HEAP SUMMARY:
+ ==3506== in use at exit: 1,024 bytes in 1 blocks
+ ==3506== total heap usage: 1 allocs, o frees, 1,024 bytes allocated
+ ==3506==
+ ==3506== LEAK SUMMARY:
+ ==3506== definitely lost: O bytes in 0 blocks
+ ==3506== indirectly lost: 0 bytes in 0 blocks
+ ==3506== possibly lost: 0 bytes in o blocks
+ ==3506== still reachable: 1,024 bytes in 1 blocks
+ ==3506== _suppressed: bytes in o blocks
+ ==3506== Rerun with--leak-check=full to see details of leaked memory
+ ==3506==
+ ==3506== For lists of detected and suppressed errors, rerun with: -5
+ ==3506== ERROR SUMMARY: 0 errors from o contexts (suppressed: O from 0)

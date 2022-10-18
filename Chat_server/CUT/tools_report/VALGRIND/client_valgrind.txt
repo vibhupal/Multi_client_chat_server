@@ -1,0 +1,22 @@
+
+﻿
+Activities Terminal
+Oct 17 18:46 @
+codebind@codebind-VirtualBox: -/Desktop/sprint2/sprintp2/compile
+codebind@codebind -VirtualBox:/Desktop/sprint2/sprintp2/compiles valgrind .. /bin/client.exe 8880,
+ ==3533== Memcheck, a memory error detector
+ ==3533== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+ ==3533== Using Valgrind -3.18.1 and LibvEX; rerun with -h for copyright info
+ ==3533== Command: ../bin/client.exe 8880
+ ==3533== Please enter your name: ^C 
+ Name must be less than 30 and more than 2 characters.
+ ==3533==
+ ==3533== HEAP SUMMARY:
+ ==3533== in use at exit: O bytes in o blocks
+ ==3533== total heap usage: 2 allocs, 2 frees, 2,048 bytes allocated
+ ==3533==
+ ==3533== All heap blocks were freed -- no leaks are possible
+ ==3533==
+ ==3533== For lists of detected and suppressed errors, rerun with: -S
+ ==3533== ERROR SUMMARY: 0 errors from o contexts (suppressed: 0 from 0),
+ codebind@codebind-VirtualBox:~/Desktop/sprint2/sprintp2/compiles 

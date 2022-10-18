@@ -1,0 +1,65 @@
+        -:    0:Source:common_client.c
+        -:    0:Graph:client.gcno
+        -:    0:Data:client.gcda
+        -:    0:Runs:3
+        -:    1:#include<header.h>
+        -:    2:
+        1:    3:void str_overwrite_stdout() {
+        1:    4:	printf("%s", "> ");
+        1:    5:	fflush(stdout);
+        1:    6:}
+        1:    7:void str_trim_lf (char* arr, int length) {
+        -:    8:	int i;
+        6:    9:	for (i = 0; i < length; i++) { 
+        6:   10:		if (arr[i] == '\n') {
+        1:   11:			arr[i] = '\0';
+        1:   12:			break;
+        -:   13:		}
+        -:   14:	}
+        1:   15:}
+        -:   16:
+        -:   17:
+        -:   18:
+        1:   19:void catch_ctrl_c_and_exit(int sig) {
+        1:   20:	    flag = 1;
+        1:   21:}
+        -:   22:
+        -:   23:
+        1:   24:void send_msg_handler() {
+        1:   25:	char message[LENGTH] = {};
+        1:   26:	char buffer[LENGTH + 32] = {};
+        -:   27:
+        -:   28:	while(1) {
+        1:   29:		str_overwrite_stdout();
+        1:   30:		fgets(message, LENGTH, stdin);
+    #####:   31:		str_trim_lf(message, LENGTH);
+        -:   32:
+    #####:   33:		if (strcmp(message, "exit") == 0) {
+    #####:   34:			break;
+        -:   35:		} else {
+    #####:   36:			sprintf(buffer, "%s: %s\n", name, message);
+    #####:   37:			send(sockfd, buffer, strlen(buffer), 0);
+        -:   38:		}
+    #####:   39:		bzero(message, LENGTH);
+    #####:   40:		bzero(buffer, LENGTH + 32);
+        -:   41:	}
+    #####:   42:	catch_ctrl_c_and_exit(2);
+    #####:   43:}
+        -:   44:
+        -:   45:
+        -:   46:
+        1:   47:void recv_msg_handler() {
+        1:   48:	char message[LENGTH] = {};
+    #####:   49:	while (1) {
+       1*:   50:		int receive = recv(sockfd, message, LENGTH, 0);
+    #####:   51:		if (receive > 0) {
+    #####:   52:			printf("%s", message);
+    #####:   53:			str_overwrite_stdout();
+    #####:   54:		} else if (receive == 0) {
+    #####:   55:			break;
+        -:   56:		} else {
+        -:   57:
+        -:   58:		}
+    #####:   59:		memset(message, 0, sizeof(message));
+        -:   60:	}
+    #####:   61:}
